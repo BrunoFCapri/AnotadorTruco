@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Truco</string>
+
+    <string name="team_nosotros">Nosotros</string>
+    <string name="team_ellos">Ellos</string>
+
+    <string name="canto_envido">Envido</string>
+    <string name="canto_real_envido">Real Envido</string>
+    <string name="canto_falta_envido">Falta Envido</string>
+    <string name="canto_flor">Flor</string>
+    <string name="canto_contraflor">Contraflor</string>
+    <string name="canto_contraflor_al_resto">Contraflor al resto</string>
+    <string name="canto_truco">Truco</string>
+    <string name="canto_retruco">Retruco</string>
+    <string name="canto_vale_cuatro">Vale Cuatro</string>
+
+    <string name="header_target">A %1$d</string>
+    <string name="con_flor">Con flor</string>
+    <string name="sin_flor">Sin flor</string>
+    <string name="pica_pica">Pica-pica</string>
+    <string name="undo">Deshacer</string>
+    <string name="new_game">Nueva partida</string>
+    <string name="pica_pica_banner">PICA-PICA · mano %1$d de %2$d</string>
+
+    <string name="mano">MANO</string>
+    <string name="make_mano">Hacer mano a %1$s</string>
+    <string name="malas">MALAS</string>
+    <string name="buenas">BUENAS</string>
+    <string name="plus_points">+%1$d</string>
+    <string name="plus_points_mano">+%1$d · mano</string>
+    <string name="minus_points">−%1$d</string>
+    <string name="sing">Cantar</string>
+    <string name="sing_title">Canta %1$s</string>
+    <string name="section_tanto">Tanto</string>
+    <string name="section_truco">Truco</string>
+
+    <string name="prompt_hand_winner">¿Quién ganó la mano?</string>
+    <string name="prompt_querido">%1$s querido</string>
+    <string name="prompt_sung">Canta %1$s</string>
+    <string name="prompt_answer">Responde %1$s</string>
+    <string name="quiero">Quiero</string>
+    <string name="no_quiero">No quiero +%1$d</string>
+    <string name="me_achico">Me achico +%1$d</string>
+    <string name="anotar_flor">Anotar flor +%1$d</string>
+    <string name="prompt_tanto_winner">¿Quién ganó? En empate gana la mano.</string>
+    <string name="cancel_canto">Cancelar</string>
+    <string name="game_over">¡Ganó %1$s!</string>
+    <string name="final_score">%1$d a %2$d</string>
+    <string name="rematch">Revancha</string>
+    <string name="performance">Rendimiento</string>
+
+    <string name="back">Volver</string>
+    <string name="performance_summary">%1$d a %2$d · %3$s</string>
+    <string name="performance_readout_final">Final</string>
+    <string name="performance_readout_start">Inicio</string>
+    <string name="performance_readout_event">Jugada %1$d</string>
+    <string name="performance_readout_team">%1$s %2$d</string>
+    <string name="performance_chart_hint">Cada escalón es una jugada que movió el tanteador. Tocá o arrastrá sobre el gráfico para ver el detalle.</string>
+    <string name="performance_chart_description">Evolución del puntaje: %1$s terminó con %2$d y %3$s con %4$d.</string>
+    <string name="performance_by_source">Puntos por origen</string>
+    <string name="source_hand">Manos y truco</string>
+    <string name="source_envido">Envido</string>
+    <string name="source_flor">Flor</string>
+    <string name="source_manual">Ajustes a mano</string>
+    <string name="performance_biggest_lead">Mayor ventaja</string>
+
+    <string name="setup_title">Nueva partida</string>
+    <string name="setup_target">Puntos</string>
+    <string name="setup_players">Jugadores</string>
+    <string name="setup_flor">Con flor</string>
+    <string name="setup_pica_pica">Pica-pica</string>
+    <string name="setup_pica_pica_hint">Por equipos y a 30: desde las buenas hasta los 25, alternando con la redonda.</string>
+    <string name="setup_mano">Arranca de mano</string>
+    <string name="setup_start">Empezar</string>
+    <string name="cancel">Cancelar</string>
+
+    <plurals name="malas">
+        <item quantity="one">%d mala</item>
+        <item quantity="other">%d malas</item>
+    </plurals>
+    <plurals name="buenas">
+        <item quantity="one">%d buena</item>
+        <item quantity="other">%d buenas</item>
+    </plurals>
+    <plurals name="puntos">
+        <item quantity="one">%d punto</item>
+        <item quantity="other">%d puntos</item>
+    </plurals>
+    <plurals name="jugadas">
+        <item quantity="one">%d jugada</item>
+        <item quantity="other">%d jugadas</item>
+    </plurals>
+    <plurals name="jugadores">
+        <item quantity="one">%d jugador</item>
+        <item quantity="other">%d jugadores</item>
+    </plurals>
+</resources>
