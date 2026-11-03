@@ -68,6 +68,33 @@ Las mediciones del historial se hicieron en un **Samsung Galaxy A04** (Android 1
 - Cuadros: `adb shell dumpsys gfxinfo com.apptruco framestats` después de un mismo recorrido de toques.
 - Latencia y detalle por hilo: traza de Perfetto.
 
+## Publicar una versión
+
+El APK se publica en [GitHub Releases](https://github.com/BrunoFCapri/AnotadorTruco/releases), no en el historial de git. El README enlaza a `releases/latest/download/AnotadorTruco.apk`, que siempre baja la última versión. Por eso **el archivo tiene que llamarse siempre `AnotadorTruco.apk`**: la versión va en la etiqueta del release, no en el nombre.
+
+1. En `app/build.gradle.kts`, subí `versionCode` (de a uno) y `versionName` (por ejemplo `1.1`).
+2. Anotá los cambios en `CHANGELOG.md` y hacé el commit.
+3. Generá el APK:
+   ```bash
+   ./gradlew assembleRelease
+   mkdir -p dist && cp app/build/outputs/apk/release/app-release.apk dist/AnotadorTruco.apk
+   ```
+   La carpeta `dist/` está en `.gitignore`.
+4. Hacé push y, en GitHub, entrá a **Releases → Draft a new release**:
+   - **Tag:** `v` más la versión (`v1.1`), creada sobre `main`.
+   - **Título:** `Truco 1.1`.
+   - **Descripción:** lo de esa versión en el CHANGELOG.
+   - **Archivos:** arrastrá `dist/AnotadorTruco.apk`.
+   - Dejá marcado **Set as the latest release** y publicá.
+5. Probá el enlace del README desde un teléfono.
+
+### La clave de firma
+
+El APK se firma con la clave de debug de la computadora donde se compila: `~/.android/debug.keystore`. Android solo instala una actualización encima si viene firmada con la **misma** clave. Si esa clave se pierde (reinstalar el sistema, cambiar de computadora), quien tenga la app instalada va a tener que desinstalarla, y perder su partida, para instalar la versión nueva.
+
+- **Guardá una copia de `~/.android/debug.keystore`** en un lugar seguro. En otra computadora, copiala a esa misma ruta antes de compilar.
+- Para publicar en Google Play hace falta una clave propia. Cambiar a otra clave obliga a todos a desinstalar una vez.
+
 ## Capturas del README
 
 Las imágenes de `docs/capturas/` salen del emulador **Pixel 6** (1080×2400), con:

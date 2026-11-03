@@ -94,6 +94,7 @@ AppTruco/
 ├── gradle.properties                Memoria de Gradle, configuration cache, estilo de Kotlin
 ├── gradle/libs.versions.toml        Catálogo de versiones: todas las dependencias en un lugar
 ├── estilos/                         Mockups y renders del estilo visual (no se versiona)
+├── dist/                            APK listo para subir a Releases (no se versiona)
 └── app/
     ├── build.gradle.kts             SDK, release con R8, firma, dependencias
     └── src/
@@ -483,7 +484,7 @@ Carpeta [`ui/theme/`](../app/src/main/java/com/apptruco/ui/theme/). Las piezas v
   - `compileSdk` y `targetSdk` 37, `minSdk` 26 (Android 8.0).
   - No aplica el plugin `kotlin-android`: **AGP 9 trae Kotlin integrado**. Solo se suman el plugin de Compose y el de serialización.
   - Release con `optimization { enable = true }` (R8: achica y optimiza el código).
-  - **Release firmado con la clave de debug**, para instalarlo por USB encima del debug sin perder la partida. Para Google Play hace falta otra clave.
+  - **Release firmado con la clave de debug**, para instalarlo por USB encima del debug sin perder la partida. El APK que se publica en GitHub Releases es este mismo build (ver "Publicar una versión" en `CONTRIBUTING.md`). Para Google Play hace falta otra clave.
 - [`gradle.properties`](../gradle.properties): `configuration-cache=true` (Gradle reusa la configuración entre builds) y el estilo oficial de Kotlin.
 - [`app/src/main/baseline-prof.txt`](../app/src/main/baseline-prof.txt): reglas de *baseline profile*. Le dicen a Android qué código compilar a nativo al instalar en lugar de esperar al JIT: toda la app, la serialización y DataStore. Las librerías de Compose traen el suyo.
 
@@ -641,7 +642,7 @@ Si no se puede leer, `ReplaceFileCorruptionHandler` reemplaza el archivo por uno
 - **Las lambdas de `GameScreen` capturan `equipo`, no `team`.** Si capturás el estado, se rompe el salteo de paneles.
 - **`GameConfig` tira excepción si es inválido.** No armes uno con valores que no estén en `TARGETS` o `PLAYERS`.
 - **Medir en debug engaña.** El debug es varias veces más lento que el release. Toda medición, con `installRelease`.
-- **La clave de debug no sirve para publicar.** Antes de subir a Play hay que configurar una firma propia.
+- **La clave de debug es la de los APK publicados.** Las actualizaciones solo se instalan encima si vienen firmadas con la misma clave: si se pierde `~/.android/debug.keystore`, quien tenga la app tiene que desinstalarla y pierde su partida. Hay que tener una copia. Para Google Play, además, hace falta una firma propia.
 - **`estilos/` no está en git.** Si un comentario dice "como el mockup", la referencia está ahí, en la copia local del autor.
 
 ---

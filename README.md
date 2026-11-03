@@ -4,6 +4,20 @@ App de Android para anotar partidas de truco en la mesa. No reparte cartas ni ju
 
 Hecha en Kotlin con Jetpack Compose, con un estilo visual de **fileteado porteño**: un naipe español pintado como cartel de bodegón.
 
+## Descargar
+
+**[⬇ Descargar AnotadorTruco.apk](https://github.com/BrunoFCapri/AnotadorTruco/releases/latest/download/AnotadorTruco.apk)** (última versión, unos 2 MB)
+
+Funciona en Android 8.0 o superior. Las versiones anteriores están en [Releases](https://github.com/BrunoFCapri/AnotadorTruco/releases).
+
+Para instalarla:
+
+1. Abrí el enlace desde el teléfono y descargá el archivo.
+2. Tocá el archivo descargado. Si Android avisa que el navegador no tiene permiso para instalar apps, entrá a **Configuración** y activá **Permitir de esta fuente**.
+3. Tocá **Instalar**. Como la app no viene de Google Play, Play Protect puede pedir que la revise; elegí **Instalar de todas formas**.
+
+Para actualizar, descargá la versión nueva e instalala encima: la partida guardada no se pierde.
+
 ## Capturas
 
 <table>
@@ -59,7 +73,7 @@ Gradle encuentra el SDK por `local.properties` (`sdk.dir=...`). Android Studio c
 ./gradlew testDebugUnitTest
 ```
 
-El release se firma con la clave de debug a propósito: así `installRelease` se instala encima del debug sin perder la partida guardada. **Para publicar en Google Play hace falta una clave propia** (ver `app/build.gradle.kts`).
+El release se firma con la clave de debug a propósito: así `installRelease` se instala encima del debug sin perder la partida guardada. El APK de [Releases](https://github.com/BrunoFCapri/AnotadorTruco/releases) es ese mismo build. **Para publicar en Google Play hace falta una clave propia** (ver `app/build.gradle.kts`).
 
 Para ver cuánto tarda en arrancar hasta que se puede jugar:
 

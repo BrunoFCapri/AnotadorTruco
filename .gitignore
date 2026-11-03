@@ -11,3 +11,6 @@ build/
 
 # Referencias visuales (renders y mockups), no se versionan
 /estilos/
+
+# APK para subir a GitHub Releases: se publica ahí, no en el historial
+/dist/
