@@ -1,5 +1,6 @@
 package com.apptruco.ui.game
 
+import androidx.compose.runtime.Immutable
 import com.apptruco.domain.Session
 import com.apptruco.domain.model.Canto
 import com.apptruco.domain.model.GameConfig
@@ -34,6 +35,8 @@ data class GameUiState(
     val canUndo: Boolean,
 )
 
+// Inmutable para que Compose lo compare por valor: si sumó el otro equipo, este panel se saltea.
+@Immutable
 data class TeamUiState(
     val team: Team,
     val points: Int,

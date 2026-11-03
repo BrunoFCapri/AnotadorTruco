@@ -149,12 +149,14 @@ fun GameScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     state.teams.forEach { team ->
+                        // Las lambdas capturan el equipo y no su estado, así siguen siendo las mismas entre jugadas.
+                        val equipo = team.team
                         TeamPanel(
                             state = team,
                             config = state.config,
-                            onPoints = { points -> onAction(GameAction.AddPoints(team.team, points)) },
+                            onPoints = { points -> onAction(GameAction.AddPoints(equipo, points)) },
                             onMakeMano = { onAction(GameAction.PassMano) },
-                            onSing = { singer = team.team },
+                            onSing = { singer = equipo },
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight(),
