@@ -12,6 +12,9 @@ import com.apptruco.domain.model.EnvidoCall
 import com.apptruco.domain.model.FlorCall
 import com.apptruco.domain.model.Team
 import com.apptruco.domain.model.TrucoCall
+import com.apptruco.ui.theme.Tonos
+import com.apptruco.ui.theme.TonosAzul
+import com.apptruco.ui.theme.TonosRojo
 
 @StringRes
 fun Team.labelRes(): Int = when (this) {
@@ -29,14 +32,13 @@ fun Team.accent(): Color = when (this) {
     Team.ELLOS -> MaterialTheme.colorScheme.tertiary
 }
 
-@Composable
-@ReadOnlyComposable
-fun Team.onAccent(): Color = when (this) {
-    Team.NOSOTROS -> MaterialTheme.colorScheme.onPrimary
-    Team.ELLOS -> MaterialTheme.colorScheme.onTertiary
+/** Tonos pintados del equipo, para cintas, botones y todo lo que va sobre la carta crema. */
+fun Team.tonos(): Tonos = when (this) {
+    Team.NOSOTROS -> TonosRojo
+    Team.ELLOS -> TonosAzul
 }
 
-/** Paso más oscuro del acento, validado para marcas de datos sobre la superficie oscura. */
+/** Tono base del equipo, el de las series del gráfico. */
 @Composable
 @ReadOnlyComposable
 fun Team.seriesColor(): Color = when (this) {

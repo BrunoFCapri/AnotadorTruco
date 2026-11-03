@@ -21,12 +21,12 @@
     <string name="pica_pica">Pica-pica</string>
     <string name="undo">Deshacer</string>
     <string name="new_game">Nueva partida</string>
-    <string name="pica_pica_banner">PICA-PICA · mano %1$d de %2$d</string>
+    <string name="pica_pica_banner">Pica-pica · mano %1$d de %2$d</string>
 
-    <string name="mano">MANO</string>
+    <string name="mano">Mano</string>
     <string name="make_mano">Hacer mano a %1$s</string>
-    <string name="malas">MALAS</string>
-    <string name="buenas">BUENAS</string>
+    <string name="malas">Malas</string>
+    <string name="buenas">Buenas</string>
     <string name="plus_points">+%1$d</string>
     <string name="plus_points_mano">+%1$d · mano</string>
     <string name="minus_points">−%1$d</string>
@@ -39,6 +39,7 @@
     <string name="prompt_querido">%1$s querido</string>
     <string name="prompt_sung">Canta %1$s</string>
     <string name="prompt_answer">Responde %1$s</string>
+    <string name="prompt_call">¡%1$s!</string>
     <string name="quiero">Quiero</string>
     <string name="no_quiero">No quiero +%1$d</string>
     <string name="me_achico">Me achico +%1$d</string>
@@ -66,6 +67,7 @@
     <string name="performance_biggest_lead">Mayor ventaja</string>
 
     <string name="setup_title">Nueva partida</string>
+    <string name="setup_dicho">¡El envido está primero!</string>
     <string name="setup_target">Puntos</string>
     <string name="setup_players">Jugadores</string>
     <string name="setup_flor">Con flor</string>

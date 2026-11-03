@@ -1,10 +1,10 @@
 package com.apptruco.ui.game
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,10 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,15 +27,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.apptruco.R
@@ -50,7 +49,14 @@ import com.apptruco.domain.model.Prompt
 import com.apptruco.domain.model.Team
 import com.apptruco.ui.performance.PerformanceScreen
 import com.apptruco.ui.setup.SetupScreen
+import com.apptruco.ui.theme.BotonFilete
+import com.apptruco.ui.theme.Cinta
+import com.apptruco.ui.theme.LetraFileteada
+import com.apptruco.ui.theme.MarcoOroRojo
+import com.apptruco.ui.theme.Oro
+import com.apptruco.ui.theme.Pintura
 import com.apptruco.ui.theme.TrucoTheme
+import com.apptruco.ui.theme.pantallaFileteada
 
 private val RestingAssistantEstimate = 140.dp
 
@@ -64,7 +70,7 @@ fun GameRoute(
         GameScreenState.Loading -> Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
+                .pantallaFileteada(),
         )
         is GameScreenState.Setup -> {
             BackHandler(enabled = screen.canCancel, onBack = viewModel::onBackToGame)
@@ -112,7 +118,13 @@ fun GameScreen(
     var restingAssistantHeight by remember { mutableStateOf<Dp?>(null) }
     val density = LocalDensity.current
 
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .pantallaFileteada(),
+        color = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) {
         Column(
             modifier = Modifier
                 .safeDrawingPadding()
@@ -194,25 +206,44 @@ private fun GameHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
+            .padding(start = 8.dp, top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.header_target, config.target), style = MaterialTheme.typography.headlineMedium)
-            Text(
-                text = details,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            LetraFileteada(
+                text = stringResource(R.string.header_target, config.target),
+                style = MaterialTheme.typography.headlineMedium,
                 maxLines = 1,
             )
+            Text(
+                text = details,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
-        IconButton(onClick = onNewGame, modifier = Modifier.size(56.dp)) {
+        BotonFilete(
+            onClick = onNewGame,
+            pintura = Pintura(filetes = MarcoOroRojo, radius = 28.dp),
+            contentColor = Oro,
+            modifier = Modifier.size(56.dp),
+            contentPadding = PaddingValues(0.dp),
+        ) {
             Icon(painterResource(R.drawable.ic_new_game), contentDescription = stringResource(R.string.new_game))
         }
-        FilledTonalButton(onClick = onUndo, enabled = canUndo, modifier = Modifier.height(52.dp)) {
+        BotonFilete(
+            onClick = onUndo,
+            pintura = Pintura(filetes = MarcoOroRojo),
+            contentColor = Oro,
+            modifier = Modifier.height(52.dp),
+            enabled = canUndo,
+            contentPadding = PaddingValues(start = 14.dp, end = 18.dp),
+        ) {
             Icon(painterResource(R.drawable.ic_undo), contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.undo), style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.undo), style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 0.5.sp))
         }
     }
 }
@@ -223,18 +254,10 @@ private fun PicaPicaBanner(
     duels: Int,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    Cinta(
+        text = stringResource(R.string.pica_pica_banner, duel, duels),
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.secondary,
-    ) {
-        Text(
-            text = stringResource(R.string.pica_pica_banner, duel, duels),
-            modifier = Modifier.padding(vertical = 8.dp),
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-        )
-    }
+    )
 }
 
 @Preview(widthDp = 411, heightDp = 860)

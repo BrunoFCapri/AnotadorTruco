@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copa de la baraja española, a todo color: el palo de Nosotros. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#B3312B"
+        android:pathData="M5 3.5h14c0 5.2-3 8.5-7 8.5S5 8.7 5 3.5z"
+        android:strokeColor="#6E1D19"
+        android:strokeWidth="1" />
+    <path
+        android:pathData="M5.4 3.6h13.2"
+        android:strokeColor="#E2B33F"
+        android:strokeWidth="1.8" />
+    <path
+        android:fillColor="#D0A43F"
+        android:pathData="M10.8 12h2.4v5.2h-2.4z" />
+    <path
+        android:fillColor="#B3312B"
+        android:pathData="M7.4 21.2c0-2.3 2-3.7 4.6-3.7s4.6 1.4 4.6 3.7z"
+        android:strokeColor="#6E1D19"
+        android:strokeWidth="1" />
+</vector>

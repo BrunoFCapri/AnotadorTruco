@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Esquina fileteada (arriba a la izquierda): voluta roja, hoja verde, rulito azul y perlas doradas.
+    Cada trazo va en tres capas: contorno negro, color y un resalte blanco corrido hacia arriba.
+    El dibujo ocupa 60×60; el lienzo tiene 4 de margen por lado para que no se recorte el contorno.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="68dp"
+    android:height="68dp"
+    android:viewportWidth="68"
+    android:viewportHeight="68">
+    <group
+        android:translateX="4"
+        android:translateY="4">
+        <path
+            android:pathData="M5 58 C 3 36, 12 15, 32 8 C 46 3, 58 12, 54 24 C 51 33, 39 33, 38 25 C 37 19, 44 17, 46 21"
+            android:strokeColor="#0B0B0B"
+            android:strokeLineCap="round"
+            android:strokeWidth="9.1" />
+        <path
+            android:pathData="M5 58 C 3 36, 12 15, 32 8 C 46 3, 58 12, 54 24 C 51 33, 39 33, 38 25 C 37 19, 44 17, 46 21"
+            android:strokeColor="#C8202F"
+            android:strokeLineCap="round"
+            android:strokeWidth="6.5" />
+        <group
+            android:translateX="-0.9"
+            android:translateY="-0.9">
+            <path
+                android:pathData="M5 58 C 3 36, 12 15, 32 8 C 46 3, 58 12, 54 24 C 51 33, 39 33, 38 25 C 37 19, 44 17, 46 21"
+                android:strokeAlpha="0.85"
+                android:strokeColor="#FFFFFF"
+                android:strokeLineCap="round"
+                android:strokeWidth="1.1" />
+        </group>
+
+        <path
+            android:pathData="M8 45 C 15 40, 24 42, 25 49 C 26 55, 18 57, 17 51"
+            android:strokeColor="#0B0B0B"
+            android:strokeLineCap="round"
+            android:strokeWidth="7.6" />
+        <path
+            android:pathData="M8 45 C 15 40, 24 42, 25 49 C 26 55, 18 57, 17 51"
+            android:strokeColor="#1F8A4C"
+            android:strokeLineCap="round"
+            android:strokeWidth="5" />
+        <group
+            android:translateX="-0.9"
+            android:translateY="-0.9">
+            <path
+                android:pathData="M8 45 C 15 40, 24 42, 25 49 C 26 55, 18 57, 17 51"
+                android:strokeAlpha="0.85"
+                android:strokeColor="#FFFFFF"
+                android:strokeLineCap="round"
+                android:strokeWidth="1.1" />
+        </group>
+
+        <path
+            android:pathData="M30 8.5 C 25 2.5, 17 3, 15.5 8 C 14.5 12, 19 13, 20 10"
+            android:strokeColor="#0B0B0B"
+            android:strokeLineCap="round"
+            android:strokeWidth="6.8" />
+        <path
+            android:pathData="M30 8.5 C 25 2.5, 17 3, 15.5 8 C 14.5 12, 19 13, 20 10"
+            android:strokeColor="#1D5FAE"
+            android:strokeLineCap="round"
+            android:strokeWidth="4.2" />
+        <group
+            android:translateX="-0.9"
+            android:translateY="-0.9">
+            <path
+                android:pathData="M30 8.5 C 25 2.5, 17 3, 15.5 8 C 14.5 12, 19 13, 20 10"
+                android:strokeAlpha="0.85"
+                android:strokeColor="#FFFFFF"
+                android:strokeLineCap="round"
+                android:strokeWidth="1.1" />
+        </group>
+
+        <path
+            android:fillColor="#E3B23C"
+            android:pathData="M39.4 44 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0z"
+            android:strokeColor="#0B0B0B"
+            android:strokeWidth="0.9" />
+        <path
+            android:fillColor="#E3B23C"
+            android:pathData="M46.6 40 a1.9 1.9 0 1 0 3.8 0 a1.9 1.9 0 1 0 -3.8 0z"
+            android:strokeColor="#0B0B0B"
+            android:strokeWidth="0.9" />
+        <path
+            android:fillColor="#E3B23C"
+            android:pathData="M34.6 49 a1.9 1.9 0 1 0 3.8 0 a1.9 1.9 0 1 0 -3.8 0z"
+            android:strokeColor="#0B0B0B"
+            android:strokeWidth="0.9" />
+        <path
+            android:fillColor="#E3B23C"
+            android:pathData="M42.6 50 a1.4 1.4 0 1 0 2.8 0 a1.4 1.4 0 1 0 -2.8 0z"
+            android:strokeColor="#0B0B0B"
+            android:strokeWidth="0.9" />
+    </group>
+</vector>

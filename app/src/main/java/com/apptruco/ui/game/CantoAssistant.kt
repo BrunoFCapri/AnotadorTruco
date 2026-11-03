@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -18,27 +17,39 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.apptruco.R
 import com.apptruco.domain.model.Canto
 import com.apptruco.domain.model.FlorCall
 import com.apptruco.domain.model.GameAction
 import com.apptruco.domain.model.Prompt
 import com.apptruco.domain.model.Team
+import com.apptruco.ui.theme.BotonContorno
+import com.apptruco.ui.theme.BotonNegro
+import com.apptruco.ui.theme.BotonPintado
+import com.apptruco.ui.theme.Cartel
+import com.apptruco.ui.theme.Crema
+import com.apptruco.ui.theme.LetraFileteada
+import com.apptruco.ui.theme.LineaGris
+import com.apptruco.ui.theme.TonosRojo
+import com.apptruco.ui.theme.conSombra
 
 private val BigButtonHeight = 64.dp
 
@@ -53,16 +64,15 @@ fun CantoAssistant(
     modifier: Modifier = Modifier,
 ) {
     val onCancel = { onAction(GameAction.CancelCanto) }
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        shadowElevation = 12.dp,
+    // La sombra hacia arriba apaga las cartas cuando el cartel crece y las tapa.
+    Cartel(
+        modifier = modifier.dropShadow(
+            RoundedCornerShape(20.dp),
+            Shadow(radius = 30.dp, color = Color.Black, offset = DpOffset(0.dp, (-12).dp), alpha = 0.8f),
+        ),
     ) {
         AnimatedContent(
             targetState = prompt,
-            modifier = Modifier.padding(16.dp),
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             contentKey = { it::class },
             label = "prompt",
@@ -107,16 +117,20 @@ private fun HandWinnerPrompt(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LetraFileteada(
                 text = stringResource(R.string.prompt_hand_winner),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleMedium,
             )
             prompt.truco?.let { truco ->
                 Text(
                     text = stringResource(R.string.prompt_querido, stringResource(truco.labelRes())),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.secondary,
                 )
             }
@@ -137,28 +151,30 @@ private fun AnswerPrompt(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SungHeader(caller = prompt.caller, calls = prompt.calls, onCancel = onCancel)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(
+            BotonPintado(
                 onClick = { onAnswer(true) },
+                tonos = prompt.responder.tonos(),
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = BigButtonHeight),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = prompt.responder.accent(),
-                    contentColor = prompt.responder.onAccent(),
-                ),
             ) {
-                Text(stringResource(R.string.quiero), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = stringResource(R.string.quiero),
+                    style = MaterialTheme.typography.labelLarge.copy(fontSize = 21.sp).conSombra(),
+                )
             }
-            OutlinedButton(
+            BotonContorno(
                 onClick = { onAnswer(false) },
+                color = Crema,
+                contentColor = Crema,
+                width = 1.5.dp,
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = BigButtonHeight),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
             ) {
                 Text(
                     text = stringResource(rejectLabel, prompt.rejectPoints),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 0.sp),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -177,17 +193,17 @@ private fun FlorPrompt(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SungHeader(caller = prompt.caller, calls = listOf(FlorCall.FLOR), onCancel = onCancel)
-        Button(
+        BotonPintado(
             onClick = onAccept,
+            tonos = prompt.caller.tonos(),
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = BigButtonHeight),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = prompt.caller.accent(),
-                contentColor = prompt.caller.onAccent(),
-            ),
         ) {
-            Text(stringResource(R.string.anotar_flor, prompt.points), style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(R.string.anotar_flor, prompt.points),
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 21.sp).conSombra(),
+            )
         }
         if (prompt.raises.isNotEmpty()) CantoButtons(cantos = prompt.raises, onSing = onRaise)
     }
@@ -200,29 +216,39 @@ private fun SungHeader(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.Top) {
+    Row(modifier = modifier.padding(start = 14.dp, end = 6.dp), verticalAlignment = Alignment.Top) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(R.string.prompt_sung, caller.label()).uppercase(),
+                text = stringResource(R.string.prompt_sung, caller.label()),
                 style = MaterialTheme.typography.labelMedium,
-                color = caller.accent(),
+                color = MaterialTheme.colorScheme.secondary,
             )
-            Text(text = calls.chainLabel(), style = MaterialTheme.typography.headlineSmall)
+            // Un canto solo entra grande; la cadena entera se achica hasta caber en dos renglones.
+            LetraFileteada(
+                text = stringResource(R.string.prompt_call, calls.chainLabel()),
+                style = MaterialTheme.typography.headlineLarge.copy(lineHeight = 1.15.em),
+                maxLines = 2,
+                autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = 42.sp, stepSize = 2.sp),
+            )
             Text(
                 text = stringResource(R.string.prompt_answer, caller.opponent.label()),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        OutlinedButton(
+        BotonContorno(
             onClick = onCancel,
+            color = LineaGris,
+            contentColor = Crema,
             modifier = Modifier.heightIn(min = 48.dp),
             contentPadding = PaddingValues(start = 12.dp, end = 16.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
         ) {
             Icon(painterResource(R.drawable.ic_close), contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.cancel_canto), style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = stringResource(R.string.cancel_canto),
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp, letterSpacing = 0.sp),
+            )
         }
     }
 }
@@ -235,11 +261,15 @@ private fun TantoWinnerPrompt(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Column {
-            Text(text = prompt.calls.chainLabel(), style = MaterialTheme.typography.headlineSmall)
+        Column(modifier = Modifier.padding(horizontal = 14.dp)) {
+            LetraFileteada(
+                text = prompt.calls.chainLabel(),
+                style = MaterialTheme.typography.headlineSmall,
+                maxLines = 2,
+            )
             Text(
                 text = stringResource(R.string.prompt_tanto_winner),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -261,16 +291,18 @@ private fun GameOverPrompt(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = stringResource(R.string.game_over, winner.label().uppercase()),
+        LetraFileteada(
+            text = stringResource(R.string.game_over, winner.label()),
             style = MaterialTheme.typography.headlineMedium,
-            color = winner.accent(),
+            textAlign = TextAlign.Center,
+            maxLines = 2,
         )
         Text(
             text = stringResource(R.string.final_score, prompt.score[winner], prompt.score[winner.opponent]),
             style = MaterialTheme.typography.titleLarge,
+            color = Crema,
         )
-        FilledTonalButton(
+        BotonNegro(
             onClick = onShowPerformance,
             modifier = Modifier
                 .fillMaxWidth()
@@ -281,24 +313,30 @@ private fun GameOverPrompt(
             Text(stringResource(R.string.performance), style = MaterialTheme.typography.titleMedium)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(
+            BotonPintado(
                 onClick = onRematch,
+                tonos = TonosRojo,
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = BigButtonHeight),
             ) {
-                Text(stringResource(R.string.rematch), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = stringResource(R.string.rematch),
+                    style = MaterialTheme.typography.labelLarge.copy(fontSize = 21.sp).conSombra(),
+                )
             }
-            OutlinedButton(
+            BotonContorno(
                 onClick = onNewGame,
+                color = Crema,
+                contentColor = Crema,
+                width = 1.5.dp,
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = BigButtonHeight),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
             ) {
                 Text(
                     text = stringResource(R.string.new_game),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -315,25 +353,26 @@ private fun TeamChoice(
 ) {
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Team.entries.forEach { team ->
-            Button(
+            BotonPintado(
                 onClick = { onPick(team) },
+                tonos = team.tonos(),
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = BigButtonHeight),
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = team.accent(),
-                    contentColor = team.onAccent(),
-                ),
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = team.label().uppercase(), style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    Text(
+                        text = team.label(),
+                        style = MaterialTheme.typography.labelMedium.conSombra(),
+                        maxLines = 1,
+                    )
                     Text(
                         text = stringResource(
                             if (team == mano) R.string.plus_points_mano else R.string.plus_points,
                             points(team),
                         ),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp, lineHeight = 28.sp)
+                            .conSombra(),
                     )
                 }
             }
@@ -355,7 +394,7 @@ fun CantoButtons(
         maxItemsInEachRow = 2,
     ) {
         cantos.forEach { canto ->
-            FilledTonalButton(
+            BotonNegro(
                 onClick = { onSing(canto) },
                 modifier = Modifier
                     .weight(1f)
@@ -363,7 +402,7 @@ fun CantoButtons(
             ) {
                 Text(
                     text = stringResource(canto.labelRes()),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                 )
             }
