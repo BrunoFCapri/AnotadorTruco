@@ -5,26 +5,30 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -81,7 +85,8 @@ fun TallyMarks(
     accent: Color,
     modifier: Modifier = Modifier,
 ) {
-    val drawn by animateFloatAsState(
+    // Se lee al dibujar y no al componer: mientras anima solo se repintan los fósforos.
+    val drawn = animateFloatAsState(
         targetValue = points.toFloat(),
         animationSpec = tween(durationMillis = 450),
         label = "tally",
@@ -96,20 +101,20 @@ fun TallyMarks(
             val inBuenas = points > config.malas
             SegmentLabel(R.string.malas, color = if (inBuenas) TintaApagada else accent)
             TallyColumn(
-                sticks = drawn,
+                sticks = { drawn.value },
                 boxes = config.malas / POINTS_PER_BOX,
                 modifier = Modifier.weight(1f),
             )
             BuenasDivider(modifier = Modifier.padding(vertical = 4.dp))
             SegmentLabel(R.string.buenas, color = if (inBuenas) accent else TintaApagada)
             TallyColumn(
-                sticks = drawn - config.malas,
+                sticks = { drawn.value - config.malas },
                 boxes = (config.target - config.malas) / POINTS_PER_BOX,
                 modifier = Modifier.weight(1f),
             )
         } else {
             TallyColumn(
-                sticks = drawn,
+                sticks = { drawn.value },
                 boxes = config.target / POINTS_PER_BOX,
                 modifier = Modifier.weight(1f),
             )
@@ -164,115 +169,143 @@ private fun BuenasDivider(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Columna de casitas en su propia capa fuera de pantalla: mientras no cambian los puntos se reusa
+ * lo ya pintado en lugar de volver a dibujar cada fósforo en cada cuadro.
+ */
 @Composable
 private fun TallyColumn(
-    sticks: Float,
+    sticks: () -> Float,
     boxes: Int,
     modifier: Modifier = Modifier,
 ) {
-    Canvas(modifier = modifier.fillMaxWidth()) {
+    Spacer(
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .drawWithCache {
+                val casitas = Casitas.medir(boxes, size, maxUnit = MaxBoxSide.toPx() / SIDE)
+                onDrawBehind { casitas?.let { drawCasitas(it, sticks()) } }
+            },
+    )
+}
+
+/** Un lado de la casita: del arranque a la punta, ya recortado, y su ángulo para la cabeza. */
+private class Fosforo(val start: Offset, val end: Offset, val degrees: Float)
+
+/**
+ * Lo que no cambia entre cuadros para un tamaño de columna: dónde va cada casita y cada fósforo,
+ * los trazos y el degradé de las cabezas. Al dibujar solo falta contar cuántos van.
+ */
+private class Casitas private constructor(boxes: Int, size: Size, val unit: Float) {
+    val side = SIDE * unit
+    val guideRadius = CornerRadius(GUIDE_RADIUS * unit)
+    val guide = Stroke(
+        width = GUIDE_WIDTH * unit,
+        cap = StrokeCap.Round,
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(1f * unit, 8f * unit)),
+    )
+    val shadowShift = ShadowShift * unit
+    val head = Size(2 * HEAD_RX * unit, 2 * HEAD_RY * unit)
+
+    // La cabeza se dibuja con el origen en su centro, así un mismo degradé sirve para todas.
+    val headTopLeft = Offset(-head.width / 2f, -head.height / 2f)
+    val headBrush = Brush.radialGradient(
+        0f to FosforoCabezaLuz,
+        0.55f to FosforoCabeza,
+        1f to FosforoCabezaSombra,
+        center = headTopLeft + Offset(head.width * 0.38f, head.height * 0.35f),
+        radius = 0.8f * (head.width + head.height) / 2f,
+    )
+    val headOutline = Stroke(width = HEAD_OUTLINE * unit)
+
+    val boxTopLefts: List<Offset>
+    val fosforos: List<Fosforo>
+
+    init {
         val height = boxes * SIDE + (boxes - 1) * GAP
-        val unit = minOf(
-            size.width * 0.7f / SIDE,
-            size.height / (height + 2 * MARGIN),
-            MaxBoxSide.toPx() / SIDE,
-        )
-        if (unit <= 0f) return@Canvas
-        val left = (size.width - SIDE * unit) / 2f
+        val left = (size.width - side) / 2f
         val top = (size.height - height * unit) / 2f
-        repeat(boxes) { index ->
-            drawCasita(
-                topLeft = Offset(left, top + index * (SIDE + GAP) * unit),
-                unit = unit,
-                sticks = sticks - index * POINTS_PER_BOX,
-            )
+        boxTopLefts = List(boxes) { index -> Offset(left, top + index * (SIDE + GAP) * unit) }
+        fosforos = boxTopLefts.flatMap { topLeft -> ladosDe(topLeft) }
+    }
+
+    private fun ladosDe(topLeft: Offset): List<Fosforo> {
+        val topRight = topLeft + Offset(side, 0f)
+        val bottomLeft = topLeft + Offset(0f, side)
+        val bottomRight = topLeft + Offset(side, side)
+        val order = listOf(
+            bottomLeft to topLeft,
+            topLeft to topRight,
+            topRight to bottomRight,
+            bottomRight to bottomLeft,
+            topLeft to bottomRight,
+        )
+        return order.mapIndexed { index, (from, to) ->
+            val trim = if (index == DIAGONAL) TRIM + DiagonalTrim else TRIM
+            val (start, end) = trimmed(from, to, by = trim * unit)
+            val direction = to - from
+            Fosforo(start, end, Math.toDegrees(atan2(direction.y, direction.x).toDouble()).toFloat())
+        }
+    }
+
+    companion object {
+        fun medir(boxes: Int, size: Size, maxUnit: Float): Casitas? {
+            val height = boxes * SIDE + (boxes - 1) * GAP
+            val unit = minOf(size.width * 0.7f / SIDE, size.height / (height + 2 * MARGIN), maxUnit)
+            return if (unit > 0f) Casitas(boxes, size, unit) else null
         }
     }
 }
 
-private fun DrawScope.drawCasita(
-    topLeft: Offset,
-    unit: Float,
-    sticks: Float,
-) {
-    val side = SIDE * unit
-    drawRoundRect(
-        color = GuiaCasita,
-        topLeft = topLeft,
-        size = Size(side, side),
-        cornerRadius = CornerRadius(GUIDE_RADIUS * unit),
-        style = Stroke(
-            width = GUIDE_WIDTH * unit,
-            cap = StrokeCap.Round,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(1f * unit, 8f * unit)),
-        ),
-    )
-
-    val topRight = topLeft + Offset(side, 0f)
-    val bottomLeft = topLeft + Offset(0f, side)
-    val bottomRight = topLeft + Offset(side, side)
-    val order = listOf(
-        bottomLeft to topLeft,
-        topLeft to topRight,
-        topRight to bottomRight,
-        bottomRight to bottomLeft,
-        topLeft to bottomRight,
-    )
-    order.forEachIndexed { index, (from, to) ->
-        val progress = (sticks - index).coerceIn(0f, 1f)
-        if (progress > 0f) {
-            val trim = if (index == DIAGONAL) TRIM + DiagonalTrim else TRIM
-            val (start, end) = trimmed(from, to, by = trim * unit)
-            val direction = to - from
-            drawFosforo(
-                start = start,
-                tip = lerp(start, end, progress),
-                degrees = Math.toDegrees(atan2(direction.y, direction.x).toDouble()).toFloat(),
-                unit = unit,
-            )
+private fun DrawScope.drawCasitas(casitas: Casitas, sticks: Float) {
+    casitas.boxTopLefts.forEachIndexed { box, topLeft ->
+        drawRoundRect(
+            color = GuiaCasita,
+            topLeft = topLeft,
+            size = Size(casitas.side, casitas.side),
+            cornerRadius = casitas.guideRadius,
+            style = casitas.guide,
+        )
+        repeat(POINTS_PER_BOX) { lado ->
+            val index = box * POINTS_PER_BOX + lado
+            val progress = (sticks - index).coerceIn(0f, 1f)
+            if (progress > 0f) drawFosforo(casitas.fosforos[index], progress, casitas)
         }
     }
 }
 
 /** Fósforo pintado: palo dorado con contorno negro, cabeza roja en la punta y la sombra sobre la carta. */
 private fun DrawScope.drawFosforo(
-    start: Offset,
-    tip: Offset,
-    degrees: Float,
-    unit: Float,
+    fosforo: Fosforo,
+    progress: Float,
+    casitas: Casitas,
 ) {
-    val shift = ShadowShift * unit
+    val start = fosforo.start
+    val tip = lerp(start, fosforo.end, progress)
+    val shift = casitas.shadowShift
+    val unit = casitas.unit
     drawLine(ShadowColor, start + shift, tip + shift, strokeWidth = STICK_OUTLINE * unit, cap = StrokeCap.Round)
-    drawHead(center = tip + shift, degrees = degrees, unit = unit, shadow = true)
+    drawHead(center = tip + shift, degrees = fosforo.degrees, casitas = casitas, shadow = true)
     drawLine(Contorno, start, tip, strokeWidth = STICK_OUTLINE * unit, cap = StrokeCap.Round)
     drawLine(FosforoPalo, start, tip, strokeWidth = STICK_WIDTH * unit, cap = StrokeCap.Round)
-    drawHead(center = tip, degrees = degrees, unit = unit)
+    drawHead(center = tip, degrees = fosforo.degrees, casitas = casitas)
 }
 
 private fun DrawScope.drawHead(
     center: Offset,
     degrees: Float,
-    unit: Float,
+    casitas: Casitas,
     shadow: Boolean = false,
 ) {
-    val head = Size(2 * HEAD_RX * unit, 2 * HEAD_RY * unit)
-    val topLeft = center - Offset(head.width, head.height) / 2f
-    rotate(degrees, pivot = center) {
-        if (shadow) {
-            drawOval(ShadowColor, topLeft = topLeft, size = head)
-        } else {
-            drawOval(
-                brush = Brush.radialGradient(
-                    0f to FosforoCabezaLuz,
-                    0.55f to FosforoCabeza,
-                    1f to FosforoCabezaSombra,
-                    center = topLeft + Offset(head.width * 0.38f, head.height * 0.35f),
-                    radius = 0.8f * (head.width + head.height) / 2f,
-                ),
-                topLeft = topLeft,
-                size = head,
-            )
-            drawOval(Contorno, topLeft = topLeft, size = head, style = Stroke(width = HEAD_OUTLINE * unit))
+    translate(center.x, center.y) {
+        rotate(degrees, pivot = Offset.Zero) {
+            if (shadow) {
+                drawOval(ShadowColor, topLeft = casitas.headTopLeft, size = casitas.head)
+            } else {
+                drawOval(brush = casitas.headBrush, topLeft = casitas.headTopLeft, size = casitas.head)
+                drawOval(Contorno, topLeft = casitas.headTopLeft, size = casitas.head, style = casitas.headOutline)
+            }
         }
     }
 }
