@@ -58,6 +58,7 @@ import com.apptruco.ui.theme.Oro
 import com.apptruco.ui.theme.Pintura
 import com.apptruco.ui.theme.TrucoTheme
 import com.apptruco.ui.theme.pantallaFileteada
+import com.apptruco.ui.theme.pantallaFileteadaDirecta
 
 private val RestingAssistantEstimate = 140.dp
 
@@ -70,10 +71,11 @@ fun GameRoute(
     // La app está lista cuando se leyó la partida, no cuando aparece el fondo vacío de Loading.
     ReportDrawnWhen { state !is GameScreenState.Loading }
     when (val screen = state) {
+        // Se ve un instante al arrancar: sin capa, el primer cuadro no tiene que reservarla.
         GameScreenState.Loading -> Box(
             modifier = modifier
                 .fillMaxSize()
-                .pantallaFileteada(),
+                .pantallaFileteadaDirecta(),
         )
         is GameScreenState.Setup -> {
             BackHandler(enabled = screen.canCancel, onBack = viewModel::onBackToGame)

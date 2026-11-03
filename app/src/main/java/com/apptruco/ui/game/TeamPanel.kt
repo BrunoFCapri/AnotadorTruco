@@ -22,10 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -34,6 +35,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.CompositingStrategy
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -82,7 +85,8 @@ fun TeamPanel(
 ) {
     val tonos = state.team.tonos()
     val mano by animateFloatAsState(targetValue = if (state.isMano) 1f else 0f, label = "mano")
-    Box(modifier = modifier.carta(team = state.team, marco = tonos.base, mano = mano)) {
+    val carta = remember(state.team, tonos.base, mano) { Modifier.carta(team = state.team, marco = tonos.base, mano = mano) }
+    Box(modifier = modifier.then(carta)) {
         VolutasEnEsquinas(size = 40.dp, inset = 9.dp, abajo = false)
         Column(
             modifier = Modifier
@@ -113,7 +117,8 @@ fun TeamPanel(
 
 /**
  * El naipe: fondo crema y doble marco (color del equipo y oro) cortado por la pinta. Cuando el
- * equipo es mano, [mano] va a 1 y la carta toma un filo de oro con resplandor.
+ * equipo es mano, [mano] va a 1 y la carta toma un filo de oro con resplandor. El naipe en sí se
+ * pinta una vez fuera de pantalla y se reusa; el filo y el resplandor, que salen de la carta, no.
  */
 private fun Modifier.carta(team: Team, marco: Color, mano: Float): Modifier = this
     .then(
@@ -123,28 +128,36 @@ private fun Modifier.carta(team: Team, marco: Color, mano: Float): Modifier = th
             Modifier
         },
     )
-    .drawBehind {
+    .drawWithCache {
         val radius = CardRadius.toPx()
-        if (mano > 0f) {
-            val ring = 3.dp.toPx()
-            drawRoundRect(
-                color = Oro.copy(alpha = mano),
-                topLeft = Offset(-ring / 2f, -ring / 2f),
-                size = Size(size.width + ring, size.height + ring),
-                cornerRadius = CornerRadius(radius + ring / 2f),
-                style = Stroke(width = ring),
-            )
+        val naipe = obtainGraphicsLayer().apply {
+            compositingStrategy = CompositingStrategy.Offscreen
+            record {
+                val fondo = Brush.verticalGradient(listOf(CartaArriba, CartaAbajo))
+                drawRoundRect(fondo, cornerRadius = CornerRadius(radius))
+                // Radios del mockup: cada línea redondea con 11 y 8 dp en su borde de afuera.
+                drawFiletes(radius = 17.dp, filetes = listOf(Filete(6.dp, 2.dp, marco)))
+                drawFiletes(radius = 18.dp, filetes = listOf(Filete(10.dp, 1.dp, Oro)))
+                val corte = Size(9.dp.toPx(), 7.dp.toPx())
+                team.cortes().forEach { dx ->
+                    val left = size.width / 2f - corte.width / 2f + dx.toPx()
+                    drawRect(fondo, topLeft = Offset(left, 4.dp.toPx()), size = corte)
+                    drawRect(fondo, topLeft = Offset(left, size.height - 4.dp.toPx() - corte.height), size = corte)
+                }
+            }
         }
-        val fondo = Brush.verticalGradient(listOf(CartaArriba, CartaAbajo))
-        drawRoundRect(fondo, cornerRadius = CornerRadius(radius))
-        // Radios del mockup: cada línea redondea con 11 y 8 dp en su borde de afuera.
-        drawFiletes(radius = 17.dp, filetes = listOf(Filete(6.dp, 2.dp, marco)))
-        drawFiletes(radius = 18.dp, filetes = listOf(Filete(10.dp, 1.dp, Oro)))
-        val corte = Size(9.dp.toPx(), 7.dp.toPx())
-        team.cortes().forEach { dx ->
-            val left = size.width / 2f - corte.width / 2f + dx.toPx()
-            drawRect(fondo, topLeft = Offset(left, 4.dp.toPx()), size = corte)
-            drawRect(fondo, topLeft = Offset(left, size.height - 4.dp.toPx() - corte.height), size = corte)
+        onDrawBehind {
+            if (mano > 0f) {
+                val ring = 3.dp.toPx()
+                drawRoundRect(
+                    color = Oro.copy(alpha = mano),
+                    topLeft = Offset(-ring / 2f, -ring / 2f),
+                    size = Size(size.width + ring, size.height + ring),
+                    cornerRadius = CornerRadius(radius + ring / 2f),
+                    style = Stroke(width = ring),
+                )
+            }
+            drawLayer(naipe)
         }
     }
 

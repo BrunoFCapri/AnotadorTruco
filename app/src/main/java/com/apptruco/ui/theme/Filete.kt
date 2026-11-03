@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -33,11 +34,14 @@ import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.CompositingStrategy
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
@@ -120,14 +124,27 @@ fun Cartel(
     contentPadding: PaddingValues = PaddingValues(start = 18.dp, top = 18.dp, end = 18.dp, bottom = 16.dp),
     content: @Composable () -> Unit,
 ) {
-    Box(
-        modifier = modifier
-            .background(fondo, RoundedCornerShape(radius))
-            .filetes(radius, filetes),
-    ) {
+    val pintura = remember(fondo, radius, filetes) { Modifier.fondoDeCartel(fondo, radius, filetes) }
+    Box(modifier = modifier.then(pintura)) {
         VolutasEnEsquinas(size = voluta, inset = volutaInset, abajo = volutasAbajo)
         Box(modifier = Modifier.padding(contentPadding)) { content() }
     }
+}
+
+/**
+ * El fondo y los filetes del cartel no cambian entre cuadros: se pintan una vez en una capa fuera de
+ * pantalla y después solo se copian, en lugar de volver a calcular el degradé en cada cuadro.
+ */
+private fun Modifier.fondoDeCartel(fondo: Brush, radius: Dp, filetes: List<Filete>): Modifier = drawWithCache {
+    val forma = RoundedCornerShape(radius).createOutline(size, layoutDirection, this)
+    val capa = obtainGraphicsLayer().apply {
+        compositingStrategy = CompositingStrategy.Offscreen
+        record {
+            drawOutline(forma, fondo)
+            drawFiletes(radius, filetes)
+        }
+    }
+    onDrawBehind { drawLayer(capa) }
 }
 
 /** Cinta con las puntas en cola de golondrina; [muesca] es cuánto entra la punta, en fracción del ancho. */
@@ -175,8 +192,26 @@ private val LuzPantalla = Luz(0.5f, 0.35f, 1.2f, 0.8f, 0f to NegroLuz, 0.65f to 
 // A 5 dp del borde de la pantalla; el radio acompaña las esquinas redondeadas de los teléfonos.
 private val MarcoPantalla = listOf(Filete(5.dp, 1.5.dp, Oro), Filete(9.5.dp, 1.2.dp, Rojo))
 
-/** Fondo de las pantallas: negro con la luz arriba y el marco de filete, oro afuera y rojo adentro. */
-fun Modifier.pantallaFileteada(): Modifier = background(LuzPantalla).filetes(radius = 35.dp, filetes = MarcoPantalla)
+/**
+ * Fondo de las pantallas: negro con la luz arriba y el marco de filete, oro afuera y rojo adentro.
+ * Se pinta una vez en una capa fuera de pantalla: Compose repinta la ventana entera en cada cuadro y
+ * así, en lugar de volver a calcular el degradé y el marco, solo se copia lo ya pintado.
+ */
+fun Modifier.pantallaFileteada(): Modifier = drawWithCache {
+    val fondo = obtainGraphicsLayer().apply {
+        compositingStrategy = CompositingStrategy.Offscreen
+        record { drawPantalla() }
+    }
+    onDrawBehind { drawLayer(fondo) }
+}
+
+/** El mismo fondo pintado directo, sin capa: para lo que se ve un instante, como la carga al arrancar. */
+fun Modifier.pantallaFileteadaDirecta(): Modifier = drawBehind { drawPantalla() }
+
+private fun DrawScope.drawPantalla() {
+    drawRect(LuzPantalla)
+    drawFiletes(radius = 35.dp, filetes = MarcoPantalla)
+}
 
 // El dibujo de la voluta ocupa 60 de un lienzo de 68: 4 de margen por lado.
 private const val VOLUTA_MARGEN = 4f / 60f
