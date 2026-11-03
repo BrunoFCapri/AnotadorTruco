@@ -23,6 +23,9 @@ android {
             optimization {
                 enable = true
             }
+            // Con la clave de debug se instala por USB encima del build debug sin perder la partida.
+            // Para publicar en Play hace falta una clave propia.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
