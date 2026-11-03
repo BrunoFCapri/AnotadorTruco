@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.GenericShape
@@ -17,9 +16,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -30,13 +34,15 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -213,7 +219,8 @@ private val OroDegrade = Brush.verticalGradient(0f to OroClaro, 0.55f to Oro, 1f
 
 /**
  * Letra fileteada: relleno de oro en degradé, contorno negro fino y una sombra roja corrida.
- * Son tres capas del mismo texto; solo la de arriba queda para la accesibilidad.
+ * Son tres capas del mismo texto pintadas con un solo layout: la sombra y el contorno reusan lo que
+ * midió el relleno, así el texto (y el autoajuste) se calcula una vez y no tres.
  */
 @Composable
 fun LetraFileteada(
@@ -226,33 +233,25 @@ fun LetraFileteada(
     sombra: Dp = 2.dp,
     contorno: Dp = 0.8.dp,
 ) {
-    val base = style.merge(textAlign = textAlign)
     val stroke = Stroke(width = with(LocalDensity.current) { contorno.toPx() }, join = StrokeJoin.Round)
-    Box(modifier = modifier, propagateMinConstraints = true) {
-        BasicText(
-            text = text,
-            modifier = Modifier
-                .offset(sombra, sombra)
-                .clearAndSetSemantics {},
-            style = base.copy(color = SombraLetra),
-            overflow = TextOverflow.Visible,
-            maxLines = maxLines,
-            autoSize = autoSize,
-        )
-        BasicText(
-            text = text,
-            modifier = Modifier.clearAndSetSemantics {},
-            style = base.copy(brush = OroDegrade),
-            overflow = TextOverflow.Visible,
-            maxLines = maxLines,
-            autoSize = autoSize,
-        )
-        BasicText(
-            text = text,
-            style = base.copy(color = Contorno, drawStyle = stroke),
-            overflow = TextOverflow.Visible,
-            maxLines = maxLines,
-            autoSize = autoSize,
-        )
-    }
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    BasicText(
+        text = text,
+        modifier = modifier.drawWithContent {
+            val medido = layout
+            // La sombra va corrida en píxeles enteros, como cuando se ubicaba con offset.
+            val corrimiento = sombra.roundToPx().toFloat()
+            // Fill explícito: el párrafo comparte la pintura y quedaría en trazo por el contorno anterior.
+            medido?.let {
+                drawText(it, color = SombraLetra, topLeft = Offset(corrimiento, corrimiento), drawStyle = Fill)
+            }
+            drawContent()
+            medido?.let { drawText(it, color = Contorno, drawStyle = stroke) }
+        },
+        style = style.merge(textAlign = textAlign).copy(brush = OroDegrade),
+        onTextLayout = { layout = it },
+        overflow = TextOverflow.Visible,
+        maxLines = maxLines,
+        autoSize = autoSize,
+    )
 }
