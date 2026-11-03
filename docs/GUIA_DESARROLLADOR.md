@@ -557,17 +557,17 @@ Todas se midieron en un Galaxy A04 con el build release. El detalle está en el 
 
 | Commit | Qué se hizo | Por qué | Resultado |
 |---|---|---|---|
-| `6e3c430` | Release firmado con la clave de debug | Para medir e instalar siempre en release: el debug corre interpretado | Partida visible: 4382 → 730 ms |
-| `cf92a4e` | `ReportDrawnWhen` | Medir hasta que se puede jugar, no hasta el fondo vacío | `Fully drawn` en el logcat |
-| `2af0965` | Baseline profile de la app | Compilar antes lo que se usa al abrir y al anotar | Partida visible: 730 → 667 ms |
-| `8f9e7e8` | `@Immutable` y lambdas estables | Se recomponían los dos paneles en cada jugada | Recomposición −14 % |
-| `07a81b2` | Casitas en capa y con lo fijo cacheado | Los fósforos eran lo más caro de cada cuadro | RenderThread: 24,5 → 16,1 ms por cuadro |
-| `80345ee` | Letra fileteada con un solo layout | Se medía tres veces cada título | Mejora chica en los cambios de cartel |
-| `3778475` | Mostrar la jugada y guardarla después | Cada toque esperaba ~55 ms al disco | Latencia p50: 92 → 42 ms |
-| `1d4046b` | Precargar fuentes en otro hilo | El primer cuadro pagaba ~60 ms creando fuentes | Partida visible: 665 → 600 ms |
-| `c2791e3` | Fondos fijos pintados una vez | La GPU repintaba el degradé de fondo en cada cuadro | GPU: 15,4 → 8,9 ms por cuadro |
+| `388f9e4` | Release firmado con la clave de debug | Para medir e instalar siempre en release: el debug corre interpretado | Partida visible: 4382 → 730 ms |
+| `f202f4b` | `ReportDrawnWhen` | Medir hasta que se puede jugar, no hasta el fondo vacío | `Fully drawn` en el logcat |
+| `ba31255` | Baseline profile de la app | Compilar antes lo que se usa al abrir y al anotar | Partida visible: 730 → 667 ms |
+| `e665ea6` | `@Immutable` y lambdas estables | Se recomponían los dos paneles en cada jugada | Recomposición −14 % |
+| `51f761c` | Casitas en capa y con lo fijo cacheado | Los fósforos eran lo más caro de cada cuadro | RenderThread: 24,5 → 16,1 ms por cuadro |
+| `47eb148` | Letra fileteada con un solo layout | Se medía tres veces cada título | Mejora chica en los cambios de cartel |
+| `7ba7c1a` | Mostrar la jugada y guardarla después | Cada toque esperaba ~55 ms al disco | Latencia p50: 92 → 42 ms |
+| `9edf968` | Precargar fuentes en otro hilo | El primer cuadro pagaba ~60 ms creando fuentes | Partida visible: 665 → 600 ms |
+| `98a0937` | Fondos fijos pintados una vez | La GPU repintaba el degradé de fondo en cada cuadro | GPU: 15,4 → 8,9 ms por cuadro |
 
-**Lo que se probó y se descartó** también está en los commits. Por ejemplo, en `3778475` escribir con `encodeToStream` resultó más lento que armar el `String`. Antes de "optimizar" algo, fijate si ya se intentó.
+**Lo que se probó y se descartó** también está en los commits. Por ejemplo, en `7ba7c1a` escribir con `encodeToStream` resultó más lento que armar el `String`. Antes de "optimizar" algo, fijate si ya se intentó.
 
 ---
 
