@@ -1,6 +1,7 @@
 package com.apptruco.ui.game
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +67,8 @@ fun GameRoute(
     viewModel: GameViewModel = viewModel(factory = GameViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // La app está lista cuando se leyó la partida, no cuando aparece el fondo vacío de Loading.
+    ReportDrawnWhen { state !is GameScreenState.Loading }
     when (val screen = state) {
         GameScreenState.Loading -> Box(
             modifier = modifier
