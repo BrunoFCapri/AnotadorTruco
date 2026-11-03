@@ -1,0 +1,12 @@
+# Perfil de la app: se compila antes de usarla en lugar de esperar al JIT.
+# Las librerías de Compose traen el suyo; acá va lo que corre al abrir la partida y en cada jugada.
+
+# El código de la app es chico y casi todo se usa al arrancar o al anotar: va completo.
+HSPLcom/apptruco/**;->**(**)**
+Lcom/apptruco/**;
+
+# La partida se lee al arrancar y se escribe en cada jugada.
+HSPLkotlinx/serialization/**;->**(**)**
+Lkotlinx/serialization/**;
+HSPLandroidx/datastore/**;->**(**)**
+Landroidx/datastore/**;
