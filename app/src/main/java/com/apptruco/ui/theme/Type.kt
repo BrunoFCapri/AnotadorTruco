@@ -1,6 +1,8 @@
 package com.apptruco.ui.theme
 
+import android.content.Context
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.Paragraph
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -8,8 +10,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
 import com.apptruco.R
+import kotlinx.coroutines.runBlocking
 
 // Playfair y Alegreya vienen como fuente variable: cada peso es un punto del eje wght.
 private fun peso(weight: FontWeight) = FontVariation.Settings(FontVariation.weight(weight.weight))
@@ -57,3 +63,30 @@ internal val TrucoTypography = Typography(
     labelMedium = Rotulo.copy(fontSize = 14.sp, lineHeight = 18.sp, letterSpacing = 1.5.sp),
     labelSmall = Rotulo.copy(fontSize = 13.sp, lineHeight = 16.sp, letterSpacing = 1.5.sp),
 )
+
+/**
+ * Prepara las letras fuera del hilo principal mientras arranca la app. Crear cada peso de las fuentes
+ * variables y el cortador de líneas cuesta caro la primera vez; si no se adelanta, lo paga el primer
+ * cuadro de la partida. Las cachés de fuentes de Compose son globales: la UI encuentra todo listo.
+ */
+fun precalentarLetras(context: Context) {
+    val resolver = createFontFamilyResolver(context)
+    runBlocking { listOf(PlayfairDisplay, Alegreya, AlegreyaSC).forEach { resolver.preload(it) } }
+    // Un párrafo por estilo arma el cortador de líneas con la misma configuración que usa la UI.
+    val density = Density(context)
+    val constraints = Constraints(maxWidth = context.resources.displayMetrics.widthPixels)
+    with(TrucoTypography) {
+        listOf(
+            displaySmall, headlineLarge, headlineMedium, headlineSmall, titleLarge, titleMedium, titleSmall,
+            bodyLarge, bodyMedium, bodySmall, labelLarge, labelMedium, labelSmall,
+        )
+    }.forEach { style ->
+        Paragraph(
+            text = "¿Quién ganó la mano? Nosotros +3",
+            style = style,
+            constraints = constraints,
+            density = density,
+            fontFamilyResolver = resolver,
+        )
+    }
+}
