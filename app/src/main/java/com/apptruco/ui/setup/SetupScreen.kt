@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -88,6 +90,7 @@ import com.apptruco.ui.theme.pinturaPintada
 private val LuzSetup = Luz(0.5f, 0f, 1.2f, 0.9f, 0f to NegroCartel, 0.7f to Negro)
 private val MarcoSetup = listOf(Filete(0.dp, 2.dp, Oro), Filete(5.dp, 1.5.dp, Rojo))
 private val SetupPadding = PaddingValues(start = 26.dp, top = 30.dp, end = 26.dp, bottom = 20.dp)
+private val MinGap = 10.dp
 
 @Composable
 fun SetupScreen(
@@ -114,7 +117,8 @@ fun SetupScreen(
         color = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
     ) {
-        // El cartel ocupa toda la pantalla y, si no entra, se desplaza entero con sus volutas.
+        // El cartel ocupa justo la pantalla: las separaciones se estiran o se achican según el alto.
+        // Solo si ni así entra (letra del sistema muy grande) se desplaza, para no esconder Empezar.
         BoxWithConstraints(
             modifier = Modifier
                 .safeDrawingPadding()
@@ -133,27 +137,32 @@ fun SetupScreen(
                 volutaInset = 10.dp,
                 contentPadding = SetupPadding,
             ) {
-                Column(
-                    modifier = Modifier.heightIn(min = minContentHeight),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                ) {
+                Column(modifier = Modifier.heightIn(min = minContentHeight)) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
+                        // Entre las volutas de arriba: en pantallas angostas el título se achica.
                         LetraFileteada(
                             text = stringResource(R.string.setup_title),
                             style = MaterialTheme.typography.displaySmall,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 34.dp),
                             textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = 34.sp),
                         )
                         Cinta(text = stringResource(R.string.setup_dicho))
                     }
+                    Aire()
                     SetupSection(title = R.string.setup_target) {
                         ChoiceRow(options = GameConfig.TARGETS, selected = target, onSelect = { target = it }) {
                             stringResource(R.string.header_target, it)
                         }
                     }
+                    Aire()
                     SetupSection(title = R.string.setup_players) {
                         ChoiceRow(
                             options = GameConfig.PLAYERS,
@@ -164,7 +173,9 @@ fun SetupScreen(
                             },
                         ) { it.toString() }
                     }
+                    Aire()
                     SwitchRow(title = R.string.setup_flor, checked = withFlor, onCheckedChange = { withFlor = it })
+                    Aire()
                     SwitchRow(
                         title = R.string.setup_pica_pica,
                         hint = R.string.setup_pica_pica_hint,
@@ -172,10 +183,11 @@ fun SetupScreen(
                         enabled = picaPicaAvailable,
                         onCheckedChange = { picaPica = it },
                     )
+                    Aire()
                     SetupSection(title = R.string.setup_mano) {
                         ChoiceRow(options = Team.entries, selected = mano, onSelect = { mano = it }) { it.label() }
                     }
-                    Spacer(Modifier.weight(1f))
+                    Aire(peso = 3f)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         BotonPintado(
                             onClick = { onStart(config, mano) },
@@ -189,6 +201,7 @@ fun SetupScreen(
                                 style = MaterialTheme.typography.headlineSmall.conSombra(),
                             )
                         }
+                        // Sin Cancelar se guarda igual su lugar, para que Empezar no tape las volutas de abajo.
                         if (canCancel) {
                             TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
                                 Text(
@@ -197,12 +210,24 @@ fun SetupScreen(
                                     color = CremaGastada,
                                 )
                             }
+                        } else {
+                            Spacer(Modifier.height(48.dp))
                         }
                     }
                 }
             }
         }
     }
+}
+
+/**
+ * Separación entre secciones: un mínimo fijo más su parte del alto que sobra, así el cartel entra
+ * justo en la pantalla sin desplazarse.
+ */
+@Composable
+private fun ColumnScope.Aire(peso: Float = 1f) {
+    Spacer(Modifier.height(MinGap))
+    Spacer(Modifier.weight(peso))
 }
 
 @Composable
